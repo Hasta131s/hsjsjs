@@ -50,9 +50,13 @@ class CrosshairService : Service() {
     }
 
     private fun setupOverlay() {
+        val density = resources.displayMetrics.density
+        val sizeDp = sharedPrefs.getInt("size", 40)
+        val pixelSize = ((sizeDp + 32) * density).toInt()
+
         val layoutParams = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            pixelSize,
+            pixelSize,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             } else {
@@ -64,7 +68,9 @@ class CrosshairService : Service() {
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply {
+            gravity = android.view.Gravity.CENTER
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -82,13 +88,33 @@ class CrosshairService : Service() {
     }
 
     private fun updateViewSettings() {
+        val sizeDp = sharedPrefs.getInt("size", 40)
+        
         crosshairView.shape = sharedPrefs.getString("shape", "cross") ?: "cross"
-        crosshairView.crosshairSize = sharedPrefs.getInt("size", 40)
+        crosshairView.crosshairSize = sizeDp
         crosshairView.crosshairColor = sharedPrefs.getInt("color", 0xFF00FF00.toInt())
         crosshairView.thickness = sharedPrefs.getFloat("thickness", 3f)
         crosshairView.opacity = sharedPrefs.getFloat("opacity", 1.0f)
         crosshairView.gap = sharedPrefs.getInt("gap", 4)
         crosshairView.outline = sharedPrefs.getBoolean("outline", true)
+
+        if (::crosshairView.isInitialized) {
+            val layoutParams = crosshairView.layoutParams as? WindowManager.LayoutParams
+            if (layoutParams != null) {
+                val density = resources.displayMetrics.density
+                val pixelSize = ((sizeDp + 32) * density).toInt()
+                
+                layoutParams.width = pixelSize
+                layoutParams.height = pixelSize
+                layoutParams.gravity = android.view.Gravity.CENTER
+                
+                try {
+                    windowManager.updateViewLayout(crosshairView, layoutParams)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     private fun createNotificationChannel() {

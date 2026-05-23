@@ -1,0 +1,6 @@
+{
+  "name": "TVNAH CROSS",
+  "description": "Gelişmiş, sade ve kurumsal nişangah (crosshair) özelleştirme uygulaması. İstediğiniz renkte, boyutta ve şekilde nişangahınızı ekranınızın üstüne sabitleyin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
